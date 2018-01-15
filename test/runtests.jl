@@ -1,4 +1,4 @@
-using OptPlus
+using OptParams
 using Base.Test
 
 # write your own tests here

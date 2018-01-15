@@ -1,4 +1,4 @@
-The OptPlus.jl package is licensed under the MIT "Expat" License:
+The OptParams.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2018: Taylor McDonnell.
 >
