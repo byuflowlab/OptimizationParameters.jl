@@ -51,18 +51,18 @@ rangedict = OptParams.getrangedict(optparams,paramdict)
 x = x0+1.0
 
 # now we can pull out the parameters that are not design variables
-varA = OptParams.getvar(x,:paramA,paramdict,rangedict)
+varA = OptParams.getvar(:paramA,x,paramdict,rangedict)
 @test varA == defaultA
 
 # the new design variable values
-varB = OptParams.getvar(x,:paramB,paramdict,rangedict)
+varB = OptParams.getvar(:paramB,x,paramdict,rangedict)
 @test varB == [1.2,1.3,1.4]
-varC = OptParams.getvar(x,:paramC,paramdict,rangedict)
+varC = OptParams.getvar(:paramC,x,paramdict,rangedict)
 @test varC == [1.5 1.6;
                1.7 1.8]
 
 # removing the scaling on the variables is taken care of!
-varD = OptParams.getvar(x,:paramD,paramdict,rangedict)
+varD = OptParams.getvar(:paramD,x,paramdict,rangedict)
 @test varD == 0.91
 
 # we can also add/drop design variables simply by changing optparams!

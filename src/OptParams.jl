@@ -50,7 +50,7 @@ function getrangedict(optparams::Array{Symbol,1},paramdict::Dict{Symbol,Array{Fl
   return rangedict
 end
 
-function getvar(x,name::Symbol,paramdict::Dict{Symbol,Array{Float64}},
+function getvar(name::Symbol,x,paramdict::Dict{Symbol,Array{Float64}},
   rangedict::Dict{Symbol,UnitRange})
 
   if name in keys(rangedict)
