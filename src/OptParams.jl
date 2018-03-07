@@ -1,6 +1,6 @@
 module OptParams
 
-export latin_hypercube_sampling
+export latin_hypercube_sampling, softmax
 
 function initdict()
   return Dict{Symbol,Array{Float64}}()
@@ -89,5 +89,10 @@ function latin_hypercube_sampling{T}(mins::AbstractVector{T}, maxs::AbstractVect
     end
     return result'
 end #latin_hypercube_sampling
+
+function softmax(x,hardness=50.0)
+    k = maximum(x)
+    return sum((x-k).*exp.(hardness*(x-k)))/sum(exp.(hardness*(x-k)))+k
+end
 
 end # module
