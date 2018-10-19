@@ -1,5 +1,5 @@
 import OptParams
-using Base.Test
+using Test
 
 # Create dictionary for storing parameters
 paramdict=OptParams.initdict()
@@ -48,7 +48,7 @@ rangedict = OptParams.getrangedict(optparams,paramdict)
 # objcon(x) = myfunction(x,optdict,rangedict)
 
 # inside the optimization loop the optimizer specifies new design variable values
-x = x0+1.0
+x = x0 .+ 1.0
 
 # now we can pull out the parameters that are not design variables
 varA = OptParams.getvar(:paramA,x,paramdict,rangedict)
