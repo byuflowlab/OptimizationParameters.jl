@@ -11,8 +11,8 @@ function addparam!(paramdict::Dict{Symbol,Array{Float64}}, name::Symbol,
 end
 
 function addparam!(paramdict::Dict{Symbol,Array{Float64}}, name::Symbol,
-    default::Array{Float64}, lowerbound::Array{Float64},
-    upperbound::Array{Float64}, scaling::Array{Float64})
+    default::AbstractArray{<:Real}, lowerbound::AbstractArray{<:Real},
+    upperbound::AbstractArray{<:Real}, scaling::AbstractArray{<:Real})
     # reshape to fit all parameters
     rsdefault = reshape(default, 1, size(default)...)
     rslowerbound = reshape(lowerbound, 1, size(lowerbound)...)
@@ -66,7 +66,7 @@ function getvar(name::Symbol, x, paramdict::Dict{Symbol,Array{Float64}},
         var = reshape(flatvar, size(vals)[2:end]...)
     else
         vals = paramdict[name]
-        var = selectdim(vals, 1, 1)[]
+        var = selectdim(vals, 1, 1)
     end
 
     # return float if single design variable
