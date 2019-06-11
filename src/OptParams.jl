@@ -1,105 +1,176 @@
 module OptParams
+import DelimitedFiles
 
-function initdict()
-    return Dict{Symbol, Array{Float64}}()
+struct OptimizationParameters
+    name::Array{String,1}
+    lb::Array{Any,1}
+    x0::Array{Any,1}
+    ub::Array{Any,1}
+    dv::Array{Bool,1}
+    comments::Array{String,1}
 end
 
-function addparam!(paramdict::Dict{Symbol,Array{Float64}}, name::Symbol,
-    default::Float64, lowerbound::Float64, upperbound::Float64, scaling::Float64)
-    paramdict[name] = vcat(default, lowerbound, upperbound, scaling)
+function readparams(file::String)
+
+    # read file, skip header
+    data = DelimitedFiles.readdlm(file, ',', skipstart=1, comments=true)
+
+    # get number of variables
+    nvar = size(data,1)
+
+    # process name
+    name = strip.(data[:,1])
+
+    # process lower bound
+    lb = Array{Any,1}(undef, nvar)
+    for i = 1:nvar
+        if typeof(data[i,2]) == String # array input needs to be processed
+            lb[i] = eval(Meta.parse(strip(data[i,2])))
+        else # assign number input
+            lb[i] = data[i,2]
+        end
+    end
+
+    # process initial value
+    x0 = Array{Any,1}(undef, nvar)
+    for i = 1:nvar
+        if typeof(data[i,3]) == String # array input needs to be processed
+            x0[i] = eval(Meta.parse(strip(data[i,3])))
+        else # assign number input
+            x0[i] = data[i,3]
+        end
+    end
+
+    # process upper bound
+    ub = Array{Any,1}(undef, nvar)
+    for i = 1:nvar
+        if typeof(data[i,4]) == String # process array input
+            ub[i] = eval(Meta.parse(strip(data[i,4])))
+        else # assign number input
+            ub[i] = data[i,4]
+        end
+    end
+
+    # process design variable flag
+    dv = zeros(Bool, nvar)
+    for i = 1:nvar
+        if typeof(data[i,5]) == String
+            dv[i] = parse(Bool, lowercase(strip(data[i,5])))
+        end
+    end
+
+    # process comments
+    comments = strip.(data[:,6])
+
+    #
+    # # read file and get number of variables
+    # lines = readlines(file)
+    # nvar = length(lines)-1
+    #
+    # # ignore first line that has header information
+    # lines = lines[2:end]
+    #
+    # # assign lower bounds, initial value, upper value, and design variable flag
+    # name = fill("", nvar)
+    # lb = Array{Any,1}(undef, nvar)
+    # x0 = Array{Any,1}(undef, nvar)
+    # ub = Array{Any,1}(undef, nvar)
+    # dv = zeros(Bool, nvar)
+    # comments = fill("", nvar)
+    # for i = 1:length(lines)
+    #
+    #     # read in variable name
+    #     idx1 = findfirst(isequal(','), lines[i])
+    #     name[i] = strip(lines[i][1:idx1-1])
+    #
+    #     # now read in lower bound, variable value, and upper bound
+    #     for arr in [lb,x0,ub]
+    #         # find next comma
+    #         idx2 = findnext(isequal(','), lines[i], idx1+1)
+    #         # process input
+    #         if occursin("[", lines[i][idx1:idx2]) # array input
+    #             idx3 = findnext(isequal('['), lines[i], idx1)
+    #             idx4 = findnext(isequal(']'), lines[i], idx1)
+    #             arr[i] = eval(Meta.parse(lines[i][idx3:idx4]))
+    #             idx2 = findnext(isequal(','), lines[i], idx4)
+    #         else # number input
+    #             arr[i] = eval(Meta.parse(lines[i][idx1+1:idx2-1]))
+    #         end
+    #         idx1 = idx2
+    #     end
+    #
+    #     # now read in design variable flag
+    #     idx2 = findnext(isequal(','), lines[i], idx1+1)
+    #     if !isnothing(idx2)
+    #         idx2 = length(lines[i])
+    #     end
+    #     dv[i] = parse(Bool, lowercase(strip(lines[i][idx1+1:idx2-1])))
+    #
+    #     # read in comments
+    #     if length(idx2) >
+    #     comments[i] = strip(lines[i][idx2+1:end])
+    # end
+
+    # bundle and return output
+    return OptimizationParameters(name, lb, x0, ub, dv, comments)
+end
+
+function writeparams(file::String, parameters::OptimizationParameters)
+
+    header = ["Parameter" "Lower Bound" "Initial Value" "Upper Bound" "Design Variable" "Comments"]
+    data = hcat(parameters.name, parameters.lb, parameters.x0,
+        parameters.ub, parameters.dv, parameters.comments)
+    DelimitedFiles.writedlm(file, vcat(header, data), ',')
+
     return nothing
 end
 
-function addparam!(paramdict::Dict{Symbol,Array{Float64}}, name::Symbol,
-    default::AbstractArray{<:Real}, lowerbound::AbstractArray{<:Real},
-    upperbound::AbstractArray{<:Real}, scaling::AbstractArray{<:Real})
-    # reshape to fit all parameters
-    rsdefault = reshape(default, 1, size(default)...)
-    rslowerbound = reshape(lowerbound, 1, size(lowerbound)...)
-    rsupperbound = reshape(upperbound, 1, size(upperbound)...)
-    rsscaling = reshape(scaling, 1, size(scaling)...)
-    paramdict[name] = vcat(rsdefault, rslowerbound, rsupperbound, rsscaling)
-    return nothing
-end
 
-function assembleinput(optparams::Array{Symbol,1}, paramdict::Dict{Symbol,Array{Float64}})
+function assembleinput(optparams::OptimizationParameters)
+
+    # initialize outputs
     x0 = Array{Float64,1}(undef, 0)
     lb = Array{Float64,1}(undef, 0)
     ub = Array{Float64,1}(undef, 0)
-    for param in optparams
-        #reshape to flatten
-        vals = paramdict[param]
-        flatvals = reshape(vals, 4, div(length(vals), 4))
-        append!(x0, flatvals[1,:] .* flatvals[4,:])
-        append!(lb, flatvals[2,:] .* flatvals[4,:])
-        append!(ub, flatvals[3,:] .* flatvals[4,:])
+
+    # get active design variables
+    activevariables = find(optparams.dv)
+
+    # assemble inputs for optimization function
+    for i=1:length(optparams.name)
+        scaledvalues = (optparams.x0-optparams.lb)/(optparams.ub-optparams.lb)
+        append!(x0, scaledvalues)
+        append!(lb, zeros(scaledvalues))
+        append!(ub, ones(scaledvalues))
     end
+
     return x0, lb, ub
 end
 
-function getrangedict(optparams::Array{Symbol,1},paramdict::Dict{Symbol,Array{Float64}})
+function getvalues(x::Array{Float64,1}, optparams::OptimizationParameters)
+
+    # create dictionary of parameters
+    designvariables = Dict{String, Any}()
+
+    # design variable index
     idx = 0
-    rangedict = Dict{Symbol,UnitRange}()
-    for param in optparams
-        #reshape to flatten
-        vals = paramdict[param]
-        flatvals = reshape(vals, 4, div(length(vals), 4))
-        rangedict[param] = idx .+ (1:size(flatvals, 2))
-        idx = idx + size(flatvals,2)
+
+    # get parameter values
+    for i = 1:length(optparams.name)
+        if optparams.dv
+            idx += 1
+            nvals = length(optparams.x0[i])
+            vals = x[idx:idx+nval-1]*(optparams.ub[i]-optparams.lb[i])+optparams.lb[i]
+        else
+            vals = optparams.x0[i]
+        end
+        designvariables[optparams.name[i]] = vals
     end
-    return rangedict
+
+    # return dictionary of parameters
+    return designvariables
 end
 
-function getvar(name::Symbol, x, paramdict::Dict{Symbol,Array{Float64}},
-    rangedict::Dict{Symbol,UnitRange})
-
-    if name in keys(rangedict)
-        # pull out design variable values
-        flatvar = x[rangedict[name]]
-
-        #remove scaling on design variable values
-        vals = paramdict[name]
-        flatvals = reshape(vals, 4, div(length(vals), 4))
-        flatvar = flatvar./flatvals[4,:]
-
-        #reshape to input dimensions
-        var = reshape(flatvar, size(vals)[2:end]...)
-    else
-        vals = paramdict[name]
-        var = selectdim(vals, 1, 1)
-    end
-
-    # return float if single design variable
-    if length(var) == 1
-        return var[1]
-    else
-        return var
-    end
-end
-
-function setvar!(name::Symbol, x, paramdict::Dict{Symbol,Array{Float64}},
-    rangedict::Dict{Symbol,UnitRange}, var)
-
-    #reshape input to flat dimensions
-    if length(var)!=1
-        flatvar = reshape(var, prod(size(var)))
-    else
-        flatvar = var
-    end
-    #reshape original inputs to get the scaling
-    origvals = paramdict[name]
-    origflatvals = reshape(origvals, 4, div(length(origvals), 4))
-    newflatvar = flatvar.*origflatvals[4,:] #apply scaling
-
-    if name in keys(rangedict)
-        # put in design variable values
-        x[rangedict[name]] = newflatvar
-    end
-
-    #Reset default to input variable
-    origflatvals[1,:] = flatvar
-    paramdict[name] = origflatvals
-    return nothing
-end
+include("deprecated.jl")
 
 end # module
