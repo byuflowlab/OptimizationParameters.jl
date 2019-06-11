@@ -24,7 +24,7 @@ function readparams(file::String)
     # process lower bound
     lb = Array{Any,1}(undef, nvar)
     for i = 1:nvar
-        if typeof(data[i,2]) == String # array input needs to be processed
+        if typeof(data[i,2]) <: AbstractString # array input needs to be processed
             lb[i] = eval(Meta.parse(strip(data[i,2])))
         else # assign number input
             lb[i] = data[i,2]
@@ -34,7 +34,7 @@ function readparams(file::String)
     # process initial value
     x0 = Array{Any,1}(undef, nvar)
     for i = 1:nvar
-        if typeof(data[i,3]) == String # array input needs to be processed
+        if typeof(data[i,3]) <: AbstractString # array input needs to be processed
             x0[i] = eval(Meta.parse(strip(data[i,3])))
         else # assign number input
             x0[i] = data[i,3]
@@ -44,7 +44,7 @@ function readparams(file::String)
     # process upper bound
     ub = Array{Any,1}(undef, nvar)
     for i = 1:nvar
-        if typeof(data[i,4]) == String # process array input
+        if typeof(data[i,4]) <: AbstractString # process array input
             ub[i] = eval(Meta.parse(strip(data[i,4])))
         else # assign number input
             ub[i] = data[i,4]
@@ -54,8 +54,10 @@ function readparams(file::String)
     # process design variable flag
     dv = zeros(Bool, nvar)
     for i = 1:nvar
-        if typeof(data[i,5]) == String
+        if typeof(data[i,5]) <: AbstractString
             dv[i] = parse(Bool, lowercase(strip(data[i,5])))
+        else
+            dv[i] = data[i,5]
         end
     end
 
@@ -126,7 +128,7 @@ function writeparams(file::String, parameters::OptimizationParameters)
 end
 
 
-function assembleinput(optparams::OptimizationParameters)
+function assembleinput(parameters::OptimizationParameters)
 
     # initialize outputs
     x0 = Array{Float64,1}(undef, 0)
@@ -134,14 +136,14 @@ function assembleinput(optparams::OptimizationParameters)
     ub = Array{Float64,1}(undef, 0)
 
     # get active design variables
-    activevariables = find(optparams.dv)
+    activevariables = findall(parameters.dv)
 
     # assemble inputs for optimization function
-    for i=1:length(optparams.name)
-        scaledvalues = (optparams.x0-optparams.lb)/(optparams.ub-optparams.lb)
+    for idx in activevariables
+        scaledvalues = (parameters.x0[idx].-parameters.lb[idx])./(parameters.ub[idx].-parameters.lb[idx])
         append!(x0, scaledvalues)
-        append!(lb, zeros(scaledvalues))
-        append!(ub, ones(scaledvalues))
+        append!(lb, zeros(length(scaledvalues)))
+        append!(ub, ones(length(scaledvalues)))
     end
 
     return x0, lb, ub
@@ -157,10 +159,10 @@ function getvalues(x::Array{Float64,1}, optparams::OptimizationParameters)
 
     # get parameter values
     for i = 1:length(optparams.name)
-        if optparams.dv
+        if optparams.dv[i]
             idx += 1
             nvals = length(optparams.x0[i])
-            vals = x[idx:idx+nval-1]*(optparams.ub[i]-optparams.lb[i])+optparams.lb[i]
+            vals = x[idx:idx+nvals-1].*(optparams.ub[i].-optparams.lb[i]).+optparams.lb[i]
         else
             vals = optparams.x0[i]
         end
