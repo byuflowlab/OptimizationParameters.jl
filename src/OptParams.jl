@@ -64,55 +64,6 @@ function readparams(file::String)
     # process comments
     comments = strip.(data[:,6])
 
-    #
-    # # read file and get number of variables
-    # lines = readlines(file)
-    # nvar = length(lines)-1
-    #
-    # # ignore first line that has header information
-    # lines = lines[2:end]
-    #
-    # # assign lower bounds, initial value, upper value, and design variable flag
-    # name = fill("", nvar)
-    # lb = Array{Any,1}(undef, nvar)
-    # x0 = Array{Any,1}(undef, nvar)
-    # ub = Array{Any,1}(undef, nvar)
-    # dv = zeros(Bool, nvar)
-    # comments = fill("", nvar)
-    # for i = 1:length(lines)
-    #
-    #     # read in variable name
-    #     idx1 = findfirst(isequal(','), lines[i])
-    #     name[i] = strip(lines[i][1:idx1-1])
-    #
-    #     # now read in lower bound, variable value, and upper bound
-    #     for arr in [lb,x0,ub]
-    #         # find next comma
-    #         idx2 = findnext(isequal(','), lines[i], idx1+1)
-    #         # process input
-    #         if occursin("[", lines[i][idx1:idx2]) # array input
-    #             idx3 = findnext(isequal('['), lines[i], idx1)
-    #             idx4 = findnext(isequal(']'), lines[i], idx1)
-    #             arr[i] = eval(Meta.parse(lines[i][idx3:idx4]))
-    #             idx2 = findnext(isequal(','), lines[i], idx4)
-    #         else # number input
-    #             arr[i] = eval(Meta.parse(lines[i][idx1+1:idx2-1]))
-    #         end
-    #         idx1 = idx2
-    #     end
-    #
-    #     # now read in design variable flag
-    #     idx2 = findnext(isequal(','), lines[i], idx1+1)
-    #     if !isnothing(idx2)
-    #         idx2 = length(lines[i])
-    #     end
-    #     dv[i] = parse(Bool, lowercase(strip(lines[i][idx1+1:idx2-1])))
-    #
-    #     # read in comments
-    #     if length(idx2) >
-    #     comments[i] = strip(lines[i][idx2+1:end])
-    # end
-
     # bundle and return output
     return OptimizationParameters(name, lb, x0, ub, dv, comments)
 end
