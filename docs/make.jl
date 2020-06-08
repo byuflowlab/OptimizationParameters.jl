@@ -1,15 +1,17 @@
 using Documenter
 using OptimizationParameters
 
-makedocs(
-    sitename = "OptimizationParameters",
+makedocs(;
+    modules = [OptimizationParameters]
+    format = Documenter.HTML(),
     pages = [
         "Home" => "index.md",
         "Example" => "example.md",
         "Library" => "library.md"
     ],
-#    format = Documenter.HTML(),
-    modules = [OptimizationParameters]
+    repo = "https://github.com/byuflowlab/OptimizationParameters.jl/blob/{commit}{path}#L{line}",
+    sitename = "OptimizationParameters.jl",
+    authors = "Taylor McDonnell <taylormcd@byu.edu>",
 )
 
 deploydocs(
