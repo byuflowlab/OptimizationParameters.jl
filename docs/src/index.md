@@ -17,7 +17,7 @@ Author: Taylor McDonnell
 
 ## Installation
 
-Enter the package manager by typing `]` and then type the following:
+Enter the package manager by typing `]` and then run the following:
 
 ```julia
 pkg> add https://github.com/byuflowlab/OptimizationParameters.jl
