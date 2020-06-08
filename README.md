@@ -1,5 +1,8 @@
 # OptimizationParameters
 
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://flow.byu.edu/OptimizationParameters.jl)
+![](https://github.com/byuflowlab/OptimizationParameters.jl/workflows/Run%20tests/badge.svg)
+
 *Convenient optimization framework parameter manipulation in Julia*
 
 Author: Taylor McDonnell
