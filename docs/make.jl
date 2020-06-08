@@ -1,5 +1,4 @@
-using Documenter
-using OptimizationParameters
+using Documenter, OptimizationParameters
 
 makedocs(;
     modules = [OptimizationParameters],
@@ -9,7 +8,6 @@ makedocs(;
         "Example" => "example.md",
         "Library" => "library.md"
     ],
-    repo = "https://github.com/byuflowlab/OptimizationParameters.jl/blob/{commit}{path}#L{line}",
     sitename = "OptimizationParameters.jl",
     authors = "Taylor McDonnell <taylormcd@byu.edu>",
 )
