@@ -28,4 +28,4 @@ pkg> add https://github.com/byuflowlab/OptimizationParameters.jl
 
 ## Usage
 
-See the [example](@ref Example)
+See the [documentation](https://flow.byu.edu/OptimizationParameters.jl)
