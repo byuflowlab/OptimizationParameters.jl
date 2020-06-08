@@ -1,68 +1,130 @@
-import OptParams
+using OptimizationParameters
 using Test
 
-# Create dictionary for storing parameters
-paramdict=OptParams.initdict()
+@testset "OptimizationParameters.jl" begin
 
-# Add a single value parameter
-defaultA = 0.1
-lowerboundA = 0.0
-upperboundA = 1.0
-scalingA = 1.0
-OptParams.addparam!(paramdict,:paramA,defaultA,lowerboundA,upperboundA,scalingA)
+    # dictionary read and write
+    dict = read_parameters("example.csv", dict=true)
+    write_parameters("tmp.csv", dict)
+    dict2 = read_parameters("tmp.csv", dict=true)
+    for key in keys(dict)
+        for field in fieldnames(OptimizationParameter)
+            @test getproperty(dict[key], field) == getproperty(dict2[key], field)
+        end
+    end
+    write_parameters("example.csv", "tmp.csv", dict)
+    dict3 = read_parameters("tmp.csv", dict=true)
+    for key in keys(dict)
+        for field in fieldnames(OptimizationParameter)
+            @test getproperty(dict[key], field) == getproperty(dict3[key], field)
+        end
+    end
 
-# Or a multi-value parameter
-defaultB = [0.2,0.3,0.4]
-lowerboundB = [0.0,0.0,0.0]
-upperboundB = [1.0,1.0,1.0]
-scalingB = [1.0,1.0,1.0]
-OptParams.addparam!(paramdict,:paramB,defaultB,lowerboundB,upperboundB,scalingB)
+    # named tuple read and write
+    nt = read_parameters("example.csv", dict=false)
+    write_parameters("tmp.csv", nt)
+    nt2 = read_parameters("tmp.csv", dict=false)
+    for key in keys(nt)
+        for field in fieldnames(OptimizationParameter)
+            @test getproperty(nt[key], field) == getproperty(nt2[key], field)
+        end
+    end
+    write_parameters("example.csv", "tmp.csv", nt)
+    nt3 = read_parameters("tmp.csv", dict=false)
+    for key in keys(nt)
+        for field in fieldnames(OptimizationParameter)
+            @test getproperty(nt[key], field) == getproperty(nt3[key], field)
+        end
+    end
 
-# multi-dimensional arrays work as well
-defaultC = [0.5 0.6; 0.7 0.8]
-lowerboundC = [0.0 0.0;0.0 0.0]
-upperboundC = [1.0 1.0; 1.0 1.0]
-scalingC = [1.0 1.0; 1.0 1.0]
-OptParams.addparam!(paramdict,:paramC,defaultC,lowerboundC,upperboundC,scalingC)
+    # remove temporary file
+    rm("tmp.csv")
 
-# Add a parameter with scaling
-defaultD = 0.9
-lowerboundD = 0.0
-upperboundD = 1.0
-scalingD = 100.0
-OptParams.addparam!(paramdict,:paramD,defaultD,lowerboundD,upperboundD,scalingD)
+    # get and set methods for OptimizationParameter
+    optparam = OptimizationParameter(1)
+    optparam = set_x0(optparam, 5)
+    optparam = set_lb(optparam, 0)
+    optparam = set_ub(optparam, 10)
+    optparam = set_scaling(optparam, 0.1)
+    optparam = set_dv(optparam, true)
+    optparam = set_description(optparam, "test variable")
 
-# define some variables for this optimization
-optparams = [:paramB,:paramC,:paramD]
+    @test get_x0(optparam) == 5
+    @test get_lb(optparam) == 0
+    @test get_ub(optparam) == 10
+    @test get_scaling(optparam) == 0.1
+    @test get_dv(optparam) == true
+    @test get_description(optparam) == "test variable"
 
-# now that we have all design variables we can assemble the optimization input
-x0,lb,ub = OptParams.assembleinput(optparams,paramdict)
+    # get and set methods for dictionaries
+    tmp1 = copy(dict)
+    set_x0!(tmp1, :scalar1, 5)
+    set_lb!(tmp1, :scalar1, 0)
+    set_ub!(tmp1, :scalar1, 10)
+    set_scaling!(tmp1, :scalar1, 0.1)
+    set_dv!(tmp1, :scalar1, true)
+    set_description!(tmp1, :scalar1, "test variable")
 
-# we'll also need the ranges for the design variables
-rangedict = OptParams.getrangedict(optparams,paramdict)
-@test rangedict[:paramB] == 1:3
-@test rangedict[:paramC] == 4:7
-@test rangedict[:paramD] == 8:8
+    @test get_x0(tmp1, :scalar1) == 5
+    @test get_lb(tmp1, :scalar1) == 0
+    @test get_ub(tmp1, :scalar1) == 10
+    @test get_scaling(tmp1, :scalar1) == 0.1
+    @test get_dv(tmp1, :scalar1) == true
+    @test get_description(tmp1, :scalar1) == "test variable"
 
-# now we would pass optdict and rangedict into our function like so:
-# objcon(x) = myfunction(x,optdict,rangedict)
+    tmp2 = copy(dict)
+    tmp2 = set_x0(tmp2, :scalar1, 5)
+    tmp2 = set_lb(tmp2, :scalar1, 0)
+    tmp2 = set_ub(tmp2, :scalar1, 10)
+    tmp2 = set_scaling(tmp2, :scalar1, 0.1)
+    tmp2 = set_dv(tmp2, :scalar1, true)
+    tmp2 = set_description(tmp2, :scalar1, "test variable")
 
-# inside the optimization loop the optimizer specifies new design variable values
-x = x0 .+ 1.0
+    @test get_x0(tmp2, :scalar1) == 5
+    @test get_lb(tmp2, :scalar1) == 0
+    @test get_ub(tmp2, :scalar1) == 10
+    @test get_scaling(tmp2, :scalar1) == 0.1
+    @test get_dv(tmp2, :scalar1) == true
+    @test get_description(tmp2, :scalar1) == "test variable"
 
-# now we can pull out the parameters that are not design variables
-varA = OptParams.getvar(:paramA,x,paramdict,rangedict)
-@test varA == defaultA
+    # get and set methods for named tuples
+    tmp3 = nt
+    tmp3 = set_x0(tmp3, :scalar1, 5)
+    tmp3 = set_lb(tmp3, :scalar1, 0)
+    tmp3 = set_ub(tmp3, :scalar1, 10)
+    tmp3 = set_scaling(tmp3, :scalar1, 0.1)
+    tmp3 = set_dv(tmp3, :scalar1, true)
+    tmp3 = set_description(tmp3, :scalar1, "test variable")
 
-# the new design variable values
-varB = OptParams.getvar(:paramB,x,paramdict,rangedict)
-@test varB == [1.2,1.3,1.4]
-varC = OptParams.getvar(:paramC,x,paramdict,rangedict)
-@test varC == [1.5 1.6;
-               1.7 1.8]
+    @test get_x0(tmp3, :scalar1) == 5
+    @test get_lb(tmp3, :scalar1) == 0
+    @test get_ub(tmp3, :scalar1) == 10
+    @test get_scaling(tmp3, :scalar1) == 0.1
+    @test get_dv(tmp3, :scalar1) == true
+    @test get_description(tmp3, :scalar1) == "test variable"
 
-# removing the scaling on the variables is taken care of!
-varD = OptParams.getvar(:paramD,x,paramdict,rangedict)
-@test varD == 0.91
+    # update parameters (still need proper tests here)
+    p_dict = get_values(dict)
+    p_nt = get_values(nt)
+    tmp = update_parameters(nt, p_dict)
+    tmp = update_parameters(dict, p_nt)
+    tmp = update_parameters(dict, p_dict)
+    tmp = update_parameters(nt, p_nt)
+    tmp = update_parameters!(dict, p_dict)
 
-# we can also add/drop design variables simply by changing optparams!
+    # update_design variables (still need proper tests here
+    tmp = update_design_variables(nt, dict)
+    tmp = update_design_variables(dict, nt)
+    tmp = update_design_variables(dict, dict2)
+    tmp = update_design_variables(nt, nt2)
+    tmp = update_design_variables!(dict, dict2)
+
+    # assemble input (still need proper tests here)
+    x0, lb, ub = assemble_input(nt)
+    x0, lb, ub = assemble_input(dict)
+
+    #extract parameter values (still need proper test here)
+    parameters = get_values(nt, x0)
+    parameters = get_values(dict, x0)
+
+end
