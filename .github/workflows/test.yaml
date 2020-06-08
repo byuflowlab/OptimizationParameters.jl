@@ -1,12 +1,6 @@
 name: Run tests
 
-on:
-  push:
-    paths:
-    - '**.jl'
-    - '**.toml'
-  pull_request:
-
+on: [push, pull_request]
 
 jobs:
   test:
