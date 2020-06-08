@@ -2,7 +2,7 @@ using Documenter
 using OptimizationParameters
 
 makedocs(;
-    modules = [OptimizationParameters]
+    modules = [OptimizationParameters],
     format = Documenter.HTML(),
     pages = [
         "Home" => "index.md",
