@@ -59,7 +59,7 @@ nothing #hide
 
 For convenience we provide the functions [`named_tuple_to_dict`](@ref) and [`dict_to_named_tuple`](@ref) to convert to and from dictionaries and named tuples.
 
-Perhaps the easiest way to construct a dictionary or named tuple of objects of type OptimizationParameter is to use a CSV input file that has the following format:
+Perhaps the easiest way to construct a dictionary or named tuple of objects of type OptimizationParameter is to use a CSV input file.  The input file for this example has the following structure:
 
 |Parameter          |Initial Value(s)|Lower Bound(s)|Upper Bound(s)|Scaling      |Design Variable(s)?       |Description                                                                  |
 |-------------------|----------------|--------------|--------------|-------------|--------------------------|-----------------------------------------------------------------------------|
@@ -86,7 +86,7 @@ Perhaps the easiest way to construct a dictionary or named tuple of objects of t
 |int1               |1               |              |              |             |                          |integers will be converted to floats when used as design variables, but otherwise left as integers|
 |string1            |"foo"           |              |              |             |                          |some types of variables like strings cannot be design variables              |
 
-This file may be read into either a dict or a named tuple using [`read_parameters`](@ref).
+Input files like this one may be read into either a dict or a named tuple using [`read_parameters`](@ref).
 
 ```@example example
 optparams = read_parameters("example.csv")
