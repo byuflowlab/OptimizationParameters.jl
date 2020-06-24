@@ -10,7 +10,7 @@ get_value
 
 get_value(optparam::OptimizationParameter) = optparam.x0
 get_value(optparam::OptimizationParameter{<:Any, <:Any, <:Any, <:Any, false}, x) = optparam.x0
-get_value(optparam::OptimizationParameter{<:Any, <:Number, <:Any, <:Any, true}, x) = x[1]/optparam.scaling + design_variable_offset(optparam.lb, optparam.ub)
+get_value(optparam::OptimizationParameter{<:Any, <:Number, <:Any, <:Any, true}, x) = x[1]/optparam.scaling - design_variable_offset(optparam.lb, optparam.ub)
 
 function get_value(optparam::OptimizationParameter{S, <:AbstractArray{<:Any, N}, <:Any, <:Any, true}, x) where {S, N}
 
