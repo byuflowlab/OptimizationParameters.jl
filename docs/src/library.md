@@ -45,7 +45,6 @@ write_parameters
 
 ```@docs
 OptimizationParameters.get_value
-OptimizationParameters.design_variable_offset
 OptimizationParameters.parse_value
 OptimizationParameters.write_value
 OptimizationParameters.get_column_ordering
