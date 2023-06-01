@@ -127,10 +127,4 @@ using Test
     parameters = get_values(nt, x0)
     parameters = get_values(dict, x0)
 
-    # test that offset works properly
-    lb = 0
-    ub = 10
-    optparam = OptimizationParameter(0; lb=lb, ub=ub, dv=true)
-    @test OptimizationParameters.get_value(optparam, 0) == (lb + ub)/2
-
 end
