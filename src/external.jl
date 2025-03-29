@@ -442,10 +442,9 @@ function assemble_input(optparams)
                 lower = optparam.lb[idv[j]]
                 upper = optparam.ub[idv[j]]
                 scaling = optparam.scaling[idv[j]]
-                offset = design_variable_offset(lower, upper)
-                lb[indices[name][j]] = (lower + offset) * scaling
-                x0[indices[name][j]] = (initial + offset) * scaling
-                ub[indices[name][j]] = (upper + offset) * scaling
+                lb[indices[name][j]] = lower * scaling
+                x0[indices[name][j]] = initial * scaling
+                ub[indices[name][j]] = upper * scaling
             end
         end
     end

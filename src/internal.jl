@@ -10,7 +10,7 @@ get_value
 
 get_value(optparam::OptimizationParameter) = optparam.x0
 get_value(optparam::OptimizationParameter{<:Any, <:Any, <:Any, <:Any, false}, x) = optparam.x0
-get_value(optparam::OptimizationParameter{<:Any, <:Number, <:Any, <:Any, true}, x) = x[1]/optparam.scaling - design_variable_offset(optparam.lb, optparam.ub)
+get_value(optparam::OptimizationParameter{<:Any, <:Number, <:Any, <:Any, true}, x) = x[1]/optparam.scaling
 
 function get_value(optparam::OptimizationParameter{S, <:AbstractArray{<:Any, N}, <:Any, <:Any, true}, x) where {S, N}
 
@@ -25,8 +25,7 @@ function get_value(optparam::OptimizationParameter{S, <:AbstractArray{<:Any, N},
     for i = 1:length(idv)
         idx = idv[i]
         scaling = optparam.scaling[idx]
-        offset = design_variable_offset(optparam.lb[idx], optparam.ub[idx])
-        result[idx] = x[i]/scaling - offset
+        result[idx] = x[i]/scaling
     end
 
     return SArray(result)
@@ -133,10 +132,3 @@ function print_design_variables(optparams, x)
 
     return nothing
 end
-
-"""
-    design_variable_offset(lb, ub)
-
-Determines the amount to offset a design variable in order to center it around zero
-"""
-design_variable_offset(lb, ub) = -(min(ub, 1e20) + max(lb, -1e20))/2
