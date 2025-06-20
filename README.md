@@ -1,7 +1,7 @@
 # OptimizationParameters
 
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://flow.byu.edu/OptimizationParameters.jl/dev)
-[![Build Status](https://github.com/byuflowlab/OptimizationParameters.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/byuflowlab/OptimizationParameters.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Build Status](https://github.com/byuflowlab/OptimizationParameters.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/byuflowlab/OptimizationParameters.jl/actions/workflows/CI.yml?query=branch%3Amaster)
 
 *Convenient optimization framework parameter manipulation in Julia*
 
