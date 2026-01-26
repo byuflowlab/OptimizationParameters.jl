@@ -33,9 +33,52 @@ function Base.show(io::IO, op::OptimizationParameter{S, TX, TF, TB, DV}
         println(io, "├─ value:\t$(op.x0)")
         println(io, "├─ lower bound:\t$(op.lb)")
         println(io, "├─ upper bound:\t$(op.ub)")
-        print(io,   "└─ scaling:\t$(op.scaling)")
+        println(io,   "└─ scaling:\t$(op.scaling)")
     else
-        print(io, "└─ value:\t$(op.x0)")
+        println(io, "└─ value:\t$(op.x0)")
+    end
+
+end
+
+function Base.show(io::IO, ops::Union{NamedTuple{<:Any, <:Tuple{Vararg{OptimizationParameter}}}, AbstractDict{<:Any, <:OptimizationParameter}})
+
+    ndv = sum(count(op.dv) for op in ops)
+    nconst = sum(length(op.dv) - count(op.dv) for op in ops)
+
+    println(io, "$(typeof(ops).name.name) of $(length(ops)) OptimizationParameters")
+
+    # Print design variables
+    println(io, "│")
+    println(io, "├─ $(ndv) design variables")
+
+    count_ndv = 0
+    for (name, op) in pairs(ops)
+        this_ndv = count(op.dv)
+        if this_ndv >= 1
+
+            count_ndv += this_ndv
+
+            branch = count_ndv == ndv ? "└─" : "├─"
+
+            println(io, "│  $(branch) $(rpad(name, 15)):\t$(rpad(op.x0, 15))\t(between $(op.lb) and $(op.ub), scaled by $(op.scaling))")
+        end
+    end
+
+    # Print constants
+    println(io, "│")
+    println(io, "└─ $(nconst) constants")
+
+    count_nconst = 0
+    for (name, op) in pairs(ops)
+        this_nconst = length(op.dv) - count(op.dv)
+        if this_nconst >= 1
+
+            count_nconst += this_nconst
+
+            branch = count_nconst == nconst ? "└─" : "├─"
+
+            println(io, "   $(branch) $(rpad(name, 15)):\t$(op.x0)")
+        end
     end
 
 end
