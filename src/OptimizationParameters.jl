@@ -22,6 +22,24 @@ end
 Base.size(::OptimizationParameter{S, TX, TF, TB, DV}) where {S, TX, TF, TB, DV} = S
 Base.eltype(::OptimizationParameter{S, TX, TF, TB, DV}) where {S, TX, TF, TB, DV} = TX
 
+function Base.show(io::IO, op::OptimizationParameter{S, TX, TF, TB, DV}
+                                                    ) where {S, TX, TF, TB, DV}
+
+    type = DV ? "Design variable" : "Constant"
+
+    println(io, "$(type) OptimizationParameter (type $(TX), size $(size(op)))")
+    println(io, "├─ description:\t$(op.description)")
+    if DV
+        println(io, "├─ value:\t$(op.x0)")
+        println(io, "├─ lower bound:\t$(op.lb)")
+        println(io, "├─ upper bound:\t$(op.ub)")
+        print(io,   "└─ scaling:\t$(op.scaling)")
+    else
+        print(io, "└─ value:\t$(op.x0)")
+    end
+
+end
+
 """
     OptimizationParameter(x0; lb=-Inf, ub=Inf, scaling=1.0, dv=false, description="")
 
