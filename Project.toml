@@ -1,7 +1,7 @@
 name = "OptimizationParameters"
 uuid = "7e4d55e1-29a6-451b-8e82-71170a6dda04"
 authors = ["Taylor McDonnell <taylor.golden.mcdonnell@gmail.com> and contributors"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
